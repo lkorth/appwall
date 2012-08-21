@@ -20,7 +20,9 @@
  * @version 1.0
  */
 
-package com.googlecode.droidwall;
+package com.lukekorth.appwall;
+
+import com.googlecode.droidwall.R;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;

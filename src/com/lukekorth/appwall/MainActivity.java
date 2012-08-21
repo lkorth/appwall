@@ -21,7 +21,7 @@
  * @version 1.0
  */
 
-package com.googlecode.droidwall;
+package com.lukekorth.appwall;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -58,7 +58,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.googlecode.droidwall.Api.DroidApp;
+import com.googlecode.droidwall.R;
+import com.lukekorth.appwall.Api.DroidApp;
 
 /**
  * Main application activity.

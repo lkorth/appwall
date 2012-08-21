@@ -19,7 +19,9 @@
  * @author Rodrigo Zechin Rosauro
  * @version 1.0
  */
-package com.googlecode.droidwall;
+package com.lukekorth.appwall;
+
+import com.googlecode.droidwall.R;
 
 import android.app.Dialog;
 import android.content.Context;

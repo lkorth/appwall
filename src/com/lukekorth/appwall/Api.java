@@ -21,7 +21,7 @@
  * @version 1.0
  */
 
-package com.googlecode.droidwall;
+package com.lukekorth.appwall;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import com.googlecode.droidwall.R;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -76,13 +78,13 @@ public final class Api {
 	public static final String MODE_WHITELIST = "whitelist";
 	public static final String MODE_BLACKLIST = "blacklist";
 	// Messages
-	public static final String STATUS_CHANGED_MSG 	= "com.googlecode.droidwall.intent.action.STATUS_CHANGED";
-	public static final String TOGGLE_REQUEST_MSG	= "com.googlecode.droidwall.intent.action.TOGGLE_REQUEST";
-	public static final String CUSTOM_SCRIPT_MSG	= "com.googlecode.droidwall.intent.action.CUSTOM_SCRIPT";
+	public static final String STATUS_CHANGED_MSG 	= "com.lukekorth.appwall.intent.action.STATUS_CHANGED";
+	public static final String TOGGLE_REQUEST_MSG	= "com.lukekorth.appwall.intent.action.TOGGLE_REQUEST";
+	public static final String CUSTOM_SCRIPT_MSG	= "com.lukekorth.appwall.intent.action.CUSTOM_SCRIPT";
 	// Message extras (parameters)
-	public static final String STATUS_EXTRA			= "com.googlecode.droidwall.intent.extra.STATUS";
-	public static final String SCRIPT_EXTRA			= "com.googlecode.droidwall.intent.extra.SCRIPT";
-	public static final String SCRIPT2_EXTRA		= "com.googlecode.droidwall.intent.extra.SCRIPT2";
+	public static final String STATUS_EXTRA			= "com.lukekorth.appwall.intent.extra.STATUS";
+	public static final String SCRIPT_EXTRA			= "com.lukekorth.appwall.intent.extra.SCRIPT";
+	public static final String SCRIPT2_EXTRA		= "com.lukekorth.appwall.intent.extra.SCRIPT2";
 	
 	// Cached applications
 	public static DroidApp applications[] = null;
