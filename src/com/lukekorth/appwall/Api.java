@@ -54,7 +54,7 @@ import android.widget.Toast;
  */
 public final class Api {
 	/** application version string */
-	public static final String VERSION = "1.5.7";
+	public static final String VERSION = "1.0";
 	/** special application UID used to indicate "any application" */
 	public static final int SPECIAL_UID_ANY	= -10;
 	/** special application UID used to indicate the Linux Kernel */
@@ -66,7 +66,6 @@ public final class Api {
 	public static final String PREFS_NAME 			= "DroidWallPrefs";
 	public static final String PREF_3G_UIDS			= "AllowedUids3G";
 	public static final String PREF_WIFI_UIDS		= "AllowedUidsWifi";
-	public static final String PREF_PASSWORD 		= "Password";
 	public static final String PREF_CUSTOMSCRIPT 	= "CustomScript";
 	public static final String PREF_CUSTOMSCRIPT2 	= "CustomScript2"; // Executed on shutdown
 	public static final String PREF_MODE 			= "BlockMode";
