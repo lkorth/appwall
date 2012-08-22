@@ -24,8 +24,8 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/onoff_widget" />
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.googlecode.droidwall.intent.action.STATUS_CHANGED"/>
-                <action android:name="com.googlecode.droidwall.intent.action.TOGGLE_REQUEST"/>
+                <action android:name="com.lukekorth.appwall.intent.action.STATUS_CHANGED"/>
+                <action android:name="com.lukekorth.appwall.intent.action.TOGGLE_REQUEST"/>
             </intent-filter>
         </receiver>
 	</application>

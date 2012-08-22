@@ -60,10 +60,10 @@ public final class Api {
 	/** special application UID used to indicate the Linux Kernel */
 	public static final int SPECIAL_UID_KERNEL	= -11;
 	/** root script filename */
-	private static final String SCRIPT_FILE = "droidwall.sh";
+	private static final String SCRIPT_FILE = "appwall.sh";
 
 	// Preferences
-	public static final String PREFS_NAME 			= "DroidWallPrefs";
+	public static final String PREFS_NAME 			= "AppWallPrefs";
 	public static final String PREF_3G_UIDS			= "AllowedUids3G";
 	public static final String PREF_WIFI_UIDS		= "AllowedUidsWifi";
 	public static final String PREF_CUSTOMSCRIPT 	= "CustomScript";
@@ -133,7 +133,7 @@ public final class Api {
 		"	fi\n" +
 		"	# Grep is absolutely required\n" +
 		"	if ! $ECHO 1 | $GREP -q 1 >/dev/null 2>/dev/null ; then\n" +
-		"		$ECHO The grep command is required. DroidWall will not work.\n" +
+		"		$ECHO The grep command is required. AppWall will not work.\n" +
 		"		exit 1\n" +
 		"	fi\n" +
 		"fi\n" +
@@ -196,30 +196,30 @@ public final class Api {
 			script.append(scriptHeader(ctx));
 			script.append("" +
 					"$IPTABLES --version || exit 1\n" +
-					"# Create the droidwall chains if necessary\n" +
-					"$IPTABLES -L droidwall >/dev/null 2>/dev/null || $IPTABLES --new droidwall || exit 2\n" +
-					"$IPTABLES -L droidwall-3g >/dev/null 2>/dev/null || $IPTABLES --new droidwall-3g || exit 3\n" +
-					"$IPTABLES -L droidwall-wifi >/dev/null 2>/dev/null || $IPTABLES --new droidwall-wifi || exit 4\n" +
-					"$IPTABLES -L droidwall-reject >/dev/null 2>/dev/null || $IPTABLES --new droidwall-reject || exit 5\n" +
-					"# Add droidwall chain to OUTPUT chain if necessary\n" +
-					"$IPTABLES -L OUTPUT | $GREP -q droidwall || $IPTABLES -A OUTPUT -j droidwall || exit 6\n" +
+					"# Create the appwall chains if necessary\n" +
+					"$IPTABLES -L appwall >/dev/null 2>/dev/null || $IPTABLES --new appwall || exit 2\n" +
+					"$IPTABLES -L appwall-3g >/dev/null 2>/dev/null || $IPTABLES --new appwall-3g || exit 3\n" +
+					"$IPTABLES -L appwall-wifi >/dev/null 2>/dev/null || $IPTABLES --new appwall-wifi || exit 4\n" +
+					"$IPTABLES -L appwall-reject >/dev/null 2>/dev/null || $IPTABLES --new appwall-reject || exit 5\n" +
+					"# Add appwall chain to OUTPUT chain if necessary\n" +
+					"$IPTABLES -L OUTPUT | $GREP -q appwall || $IPTABLES -A OUTPUT -j appwall || exit 6\n" +
 					"# Flush existing rules\n" +
-					"$IPTABLES -F droidwall || exit 7\n" +
-					"$IPTABLES -F droidwall-3g || exit 8\n" +
-					"$IPTABLES -F droidwall-wifi || exit 9\n" +
-					"$IPTABLES -F droidwall-reject || exit 10\n" +
+					"$IPTABLES -F appwall || exit 7\n" +
+					"$IPTABLES -F appwall-3g || exit 8\n" +
+					"$IPTABLES -F appwall-wifi || exit 9\n" +
+					"$IPTABLES -F appwall-reject || exit 10\n" +
 					"");
 			// Check if logging is enabled
 			if (logenabled) {
 				script.append("" +
 						"# Create the log and reject rules (ignore errors on the LOG target just in case it is not available)\n" +
-						"$IPTABLES -A droidwall-reject -j LOG --log-prefix \"[DROIDWALL] \" --log-uid\n" +
-						"$IPTABLES -A droidwall-reject -j REJECT || exit 11\n" +
+						"$IPTABLES -A appwall-reject -j LOG --log-prefix \"[APPWALL] \" --log-uid\n" +
+						"$IPTABLES -A appwall-reject -j REJECT || exit 11\n" +
 						"");
 			} else {
 				script.append("" +
 						"# Create the reject rule (log disabled)\n" +
-						"$IPTABLES -A droidwall-reject -j REJECT || exit 11\n" +
+						"$IPTABLES -A appwall-reject -j REJECT || exit 11\n" +
 						"");
 			}
 			if (customScript.length() > 0) {
@@ -229,18 +229,18 @@ public final class Api {
 			}
 			if (whitelist && logenabled) {
 				script.append("# Allow DNS lookups on white-list for a better logging (ignore errors)\n");
-				script.append("$IPTABLES -A droidwall -p udp --dport 53 -j RETURN\n");
+				script.append("$IPTABLES -A appwall -p udp --dport 53 -j RETURN\n");
 			}
 			script.append("# Main rules (per interface)\n");
 			for (final String itf : ITFS_3G) {
-				script.append("$IPTABLES -A droidwall -o ").append(itf).append(" -j droidwall-3g || exit\n");
+				script.append("$IPTABLES -A appwall -o ").append(itf).append(" -j appwall-3g || exit\n");
 			}
 			for (final String itf : ITFS_WIFI) {
-				script.append("$IPTABLES -A droidwall -o ").append(itf).append(" -j droidwall-wifi || exit\n");
+				script.append("$IPTABLES -A appwall -o ").append(itf).append(" -j appwall-wifi || exit\n");
 			}
 
 			script.append("# Filtering rules\n");
-			final String targetRule = (whitelist ? "RETURN" : "droidwall-reject");
+			final String targetRule = (whitelist ? "RETURN" : "appwall-reject");
 			final boolean any_3g = uids3g.indexOf(SPECIAL_UID_ANY) >= 0;
 			final boolean any_wifi = uidsWifi.indexOf(SPECIAL_UID_ANY) >= 0;
 			if (whitelist && !any_wifi) {
@@ -248,70 +248,70 @@ public final class Api {
 				int uid = android.os.Process.getUidForName("dhcp");
 				if (uid != -1) {
 					script.append("# dhcp user\n");
-					script.append("$IPTABLES -A droidwall-wifi -m owner --uid-owner ").append(uid).append(" -j RETURN || exit\n");
+					script.append("$IPTABLES -A appwall-wifi -m owner --uid-owner ").append(uid).append(" -j RETURN || exit\n");
 				}
 				uid = android.os.Process.getUidForName("wifi");
 				if (uid != -1) {
 					script.append("# wifi user\n");
-					script.append("$IPTABLES -A droidwall-wifi -m owner --uid-owner ").append(uid).append(" -j RETURN || exit\n");
+					script.append("$IPTABLES -A appwall-wifi -m owner --uid-owner ").append(uid).append(" -j RETURN || exit\n");
 				}
 			}
 			if (any_3g) {
 				if (blacklist) {
 					/* block any application on this interface */
-					script.append("$IPTABLES -A droidwall-3g -j ").append(targetRule).append(" || exit\n");
+					script.append("$IPTABLES -A appwall-3g -j ").append(targetRule).append(" || exit\n");
 				}
 			} else {
 				/* release/block individual applications on this interface */
 				for (final Integer uid : uids3g) {
-					if (uid >= 0) script.append("$IPTABLES -A droidwall-3g -m owner --uid-owner ").append(uid).append(" -j ").append(targetRule).append(" || exit\n");
+					if (uid >= 0) script.append("$IPTABLES -A appwall-3g -m owner --uid-owner ").append(uid).append(" -j ").append(targetRule).append(" || exit\n");
 				}
 			}
 			if (any_wifi) {
 				if (blacklist) {
 					/* block any application on this interface */
-					script.append("$IPTABLES -A droidwall-wifi -j ").append(targetRule).append(" || exit\n");
+					script.append("$IPTABLES -A appwall-wifi -j ").append(targetRule).append(" || exit\n");
 				}
 			} else {
 				/* release/block individual applications on this interface */
 				for (final Integer uid : uidsWifi) {
-					if (uid >= 0) script.append("$IPTABLES -A droidwall-wifi -m owner --uid-owner ").append(uid).append(" -j ").append(targetRule).append(" || exit\n");
+					if (uid >= 0) script.append("$IPTABLES -A appwall-wifi -m owner --uid-owner ").append(uid).append(" -j ").append(targetRule).append(" || exit\n");
 				}
 			}
 			if (whitelist) {
 				if (!any_3g) {
 					if (uids3g.indexOf(SPECIAL_UID_KERNEL) >= 0) {
 						script.append("# hack to allow kernel packets on white-list\n");
-						script.append("$IPTABLES -A droidwall-3g -m owner --uid-owner 0:999999999 -j droidwall-reject || exit\n");
+						script.append("$IPTABLES -A appwall-3g -m owner --uid-owner 0:999999999 -j appwall-reject || exit\n");
 					} else {
-						script.append("$IPTABLES -A droidwall-3g -j droidwall-reject || exit\n");
+						script.append("$IPTABLES -A appwall-3g -j appwall-reject || exit\n");
 					}
 				}
 				if (!any_wifi) {
 					if (uidsWifi.indexOf(SPECIAL_UID_KERNEL) >= 0) {
 						script.append("# hack to allow kernel packets on white-list\n");
-						script.append("$IPTABLES -A droidwall-wifi -m owner --uid-owner 0:999999999 -j droidwall-reject || exit\n");
+						script.append("$IPTABLES -A appwall-wifi -m owner --uid-owner 0:999999999 -j appwall-reject || exit\n");
 					} else {
-						script.append("$IPTABLES -A droidwall-wifi -j droidwall-reject || exit\n");
+						script.append("$IPTABLES -A appwall-wifi -j appwall-reject || exit\n");
 					}
 				}
 			} else {
 				if (uids3g.indexOf(SPECIAL_UID_KERNEL) >= 0) {
 					script.append("# hack to BLOCK kernel packets on black-list\n");
-					script.append("$IPTABLES -A droidwall-3g -m owner --uid-owner 0:999999999 -j RETURN || exit\n");
-					script.append("$IPTABLES -A droidwall-3g -j droidwall-reject || exit\n");
+					script.append("$IPTABLES -A appwall-3g -m owner --uid-owner 0:999999999 -j RETURN || exit\n");
+					script.append("$IPTABLES -A appwall-3g -j appwall-reject || exit\n");
 				}
 				if (uidsWifi.indexOf(SPECIAL_UID_KERNEL) >= 0) {
 					script.append("# hack to BLOCK kernel packets on black-list\n");
-					script.append("$IPTABLES -A droidwall-wifi -m owner --uid-owner 0:999999999 -j RETURN || exit\n");
-					script.append("$IPTABLES -A droidwall-wifi -j droidwall-reject || exit\n");
+					script.append("$IPTABLES -A appwall-wifi -m owner --uid-owner 0:999999999 -j RETURN || exit\n");
+					script.append("$IPTABLES -A appwall-wifi -j appwall-reject || exit\n");
 				}
 			}
 			final StringBuilder res = new StringBuilder();
 			code = runScriptAsRoot(ctx, script.toString(), res);
 			if (showErrors && code != 0) {
 				String msg = res.toString();
-				Log.e("DroidWall", msg);
+				Log.e("AppWall", msg);
 				// Remove unnecessary help message from output
 				if (msg.indexOf("\nTry `iptables -h' or 'iptables --help' for more information.") != -1) {
 					msg = msg.replace("\nTry `iptables -h' or 'iptables --help' for more information.", "");
@@ -424,10 +424,10 @@ public final class Api {
 			final StringBuilder script = new StringBuilder();
 			script.append(scriptHeader(ctx));
 			script.append("" +
-					"$IPTABLES -F droidwall\n" +
-					"$IPTABLES -F droidwall-reject\n" +
-					"$IPTABLES -F droidwall-3g\n" +
-					"$IPTABLES -F droidwall-wifi\n" +
+					"$IPTABLES -F appwall\n" +
+					"$IPTABLES -F appwall-reject\n" +
+					"$IPTABLES -F appwall-3g\n" +
+					"$IPTABLES -F appwall-wifi\n" +
 					"");
 			if (customScript.length() > 0) {
 				script.append("\n# BEGIN OF CUSTOM SCRIPT (user-defined)\n");
@@ -489,7 +489,7 @@ public final class Api {
 		try {
 			StringBuilder res = new StringBuilder();
 			int code = runScriptAsRoot(ctx, scriptHeader(ctx) +
-					"dmesg | $GREP DROIDWALL\n", res);
+					"dmesg | $GREP APPWALL\n", res);
 			if (code != 0) {
 				if (res.length() == 0) {
 					res.append("Log is empty");
@@ -506,7 +506,7 @@ public final class Api {
 			final HashMap<Integer, LogInfo> map = new HashMap<Integer, LogInfo>();
 			LogInfo loginfo = null;
 			while ((line = r.readLine()) != null) {
-				if (line.indexOf("[DROIDWALL]") == -1) continue;
+				if (line.indexOf("[APPWALL]") == -1) continue;
 				appid = unknownUID;
 				if (((start=line.indexOf("UID=")) != -1) && ((end=line.indexOf(" ", start)) != -1)) {
 					appid = Integer.parseInt(line.substring(start+4, end));
@@ -719,8 +719,8 @@ public final class Api {
 		}
 		if (showErrors) {
 			alert(ctx, "Could not acquire root access.\n" +
-					"You need a rooted phone to run DroidWall.\n\n" +
-					"If this phone is already rooted, please make sure DroidWall has enough permissions to execute the \"su\" command.\n" +
+					"You need a rooted phone to run AppWall.\n\n" +
+					"If this phone is already rooted, please make sure AppWall has enough permissions to execute the \"su\" command.\n" +
 					"Error message: " + res.toString());
 		}
 		return false;
@@ -871,7 +871,7 @@ public final class Api {
 			while (tok.hasMoreTokens()) {
 				final String token = tok.nextToken();
 				if (uid_str.equals(token)) {
-					Log.d("DroidWall", "Removing UID " + token + " from the wi-fi list (package removed)!");
+					Log.d("AppWall", "Removing UID " + token + " from the wi-fi list (package removed)!");
 					changed = true;
 				} else {
 					if (newuids.length() > 0) newuids.append('|');
@@ -889,7 +889,7 @@ public final class Api {
 			while (tok.hasMoreTokens()) {
 				final String token = tok.nextToken();
 				if (uid_str.equals(token)) {
-					Log.d("DroidWall", "Removing UID " + token + " from the 3G list (package removed)!");
+					Log.d("AppWall", "Removing UID " + token + " from the 3G list (package removed)!");
 					changed = true;
 				} else {
 					if (newuids.length() > 0) newuids.append('|');
@@ -948,7 +948,6 @@ public final class Api {
 		public String toString() {
 			if (tostr == null) {
 				final StringBuilder s = new StringBuilder();
-				if (uid > 0) s.append(uid + ": ");
 				for (int i=0; i<names.length; i++) {
 					if (i != 0) s.append(", ");
 					s.append(names[i]);
