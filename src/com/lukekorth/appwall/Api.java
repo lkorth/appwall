@@ -36,8 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import com.googlecode.droidwall.R;
-
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -63,7 +61,7 @@ public final class Api {
 	public static final int SPECIAL_UID_KERNEL	= -11;
 	/** root script filename */
 	private static final String SCRIPT_FILE = "droidwall.sh";
-	
+
 	// Preferences
 	public static final String PREFS_NAME 			= "DroidWallPrefs";
 	public static final String PREF_3G_UIDS			= "AllowedUids3G";
@@ -85,25 +83,25 @@ public final class Api {
 	public static final String STATUS_EXTRA			= "com.lukekorth.appwall.intent.extra.STATUS";
 	public static final String SCRIPT_EXTRA			= "com.lukekorth.appwall.intent.extra.SCRIPT";
 	public static final String SCRIPT2_EXTRA		= "com.lukekorth.appwall.intent.extra.SCRIPT2";
-	
+
 	// Cached applications
 	public static DroidApp applications[] = null;
 	// Do we have root access?
 	private static boolean hasroot = false;
 
-    /**
-     * Display a simple alert box
-     * @param ctx context
-     * @param msg message
-     */
+	/**
+	 * Display a simple alert box
+	 * @param ctx context
+	 * @param msg message
+	 */
 	public static void alert(Context ctx, CharSequence msg) {
-    	if (ctx != null) {
-        	new AlertDialog.Builder(ctx)
-        	.setNeutralButton(android.R.string.ok, null)
-        	.setMessage(msg)
-        	.show();
-    	}
-    }
+		if (ctx != null) {
+			new AlertDialog.Builder(ctx)
+			.setNeutralButton(android.R.string.ok, null)
+			.setMessage(msg)
+			.show();
+		}
+	}
 	/**
 	 * Create the generic shell script header used to determine which iptables binary to use.
 	 * @param ctx context
@@ -113,40 +111,40 @@ public final class Api {
 		final String dir = ctx.getDir("bin",0).getAbsolutePath();
 		final String myiptables = dir + "/iptables_armv5";
 		return "" +
-			"IPTABLES=iptables\n" +
-			"BUSYBOX=busybox\n" +
-			"GREP=grep\n" +
-			"ECHO=echo\n" +
-			"# Try to find busybox\n" +
-			"if " + dir + "/busybox_g1 --help >/dev/null 2>/dev/null ; then\n" +
-			"	BUSYBOX="+dir+"/busybox_g1\n" +
-			"	GREP=\"$BUSYBOX grep\"\n" +
-			"	ECHO=\"$BUSYBOX echo\"\n" +
-			"elif busybox --help >/dev/null 2>/dev/null ; then\n" +
-			"	BUSYBOX=busybox\n" +
-			"elif /system/xbin/busybox --help >/dev/null 2>/dev/null ; then\n" +
-			"	BUSYBOX=/system/xbin/busybox\n" +
-			"elif /system/bin/busybox --help >/dev/null 2>/dev/null ; then\n" +
-			"	BUSYBOX=/system/bin/busybox\n" +
-			"fi\n" +
-			"# Try to find grep\n" +
-			"if ! $ECHO 1 | $GREP -q 1 >/dev/null 2>/dev/null ; then\n" +
-			"	if $ECHO 1 | $BUSYBOX grep -q 1 >/dev/null 2>/dev/null ; then\n" +
-			"		GREP=\"$BUSYBOX grep\"\n" +
-			"	fi\n" +
-			"	# Grep is absolutely required\n" +
-			"	if ! $ECHO 1 | $GREP -q 1 >/dev/null 2>/dev/null ; then\n" +
-			"		$ECHO The grep command is required. DroidWall will not work.\n" +
-			"		exit 1\n" +
-			"	fi\n" +
-			"fi\n" +
-			"# Try to find iptables\n" +
-			"# Added if iptables binary already in system then use it, if not use implemented one\n" + 
-			"if ! command -v iptables &> /dev/null; then\n" +
-			"if " + myiptables + " --version >/dev/null 2>/dev/null ; then\n" +
-			"	IPTABLES="+myiptables+"\n" +
-			"fi\nfi\n" +
-			"";
+		"IPTABLES=iptables\n" +
+		"BUSYBOX=busybox\n" +
+		"GREP=grep\n" +
+		"ECHO=echo\n" +
+		"# Try to find busybox\n" +
+		"if " + dir + "/busybox_g1 --help >/dev/null 2>/dev/null ; then\n" +
+		"	BUSYBOX="+dir+"/busybox_g1\n" +
+		"	GREP=\"$BUSYBOX grep\"\n" +
+		"	ECHO=\"$BUSYBOX echo\"\n" +
+		"elif busybox --help >/dev/null 2>/dev/null ; then\n" +
+		"	BUSYBOX=busybox\n" +
+		"elif /system/xbin/busybox --help >/dev/null 2>/dev/null ; then\n" +
+		"	BUSYBOX=/system/xbin/busybox\n" +
+		"elif /system/bin/busybox --help >/dev/null 2>/dev/null ; then\n" +
+		"	BUSYBOX=/system/bin/busybox\n" +
+		"fi\n" +
+		"# Try to find grep\n" +
+		"if ! $ECHO 1 | $GREP -q 1 >/dev/null 2>/dev/null ; then\n" +
+		"	if $ECHO 1 | $BUSYBOX grep -q 1 >/dev/null 2>/dev/null ; then\n" +
+		"		GREP=\"$BUSYBOX grep\"\n" +
+		"	fi\n" +
+		"	# Grep is absolutely required\n" +
+		"	if ! $ECHO 1 | $GREP -q 1 >/dev/null 2>/dev/null ; then\n" +
+		"		$ECHO The grep command is required. DroidWall will not work.\n" +
+		"		exit 1\n" +
+		"	fi\n" +
+		"fi\n" +
+		"# Try to find iptables\n" +
+		"# Added if iptables binary already in system then use it, if not use implemented one\n" +
+		"if ! command -v iptables &> /dev/null; then\n" +
+		"if " + myiptables + " --version >/dev/null 2>/dev/null ; then\n" +
+		"	IPTABLES="+myiptables+"\n" +
+		"fi\nfi\n" +
+		"";
 	}
 	/**
 	 * Copies a raw resource file, given its ID to the given location
@@ -173,13 +171,13 @@ public final class Api {
 		// Change the permissions
 		Runtime.getRuntime().exec("chmod "+mode+" "+abspath).waitFor();
 	}
-    /**
-     * Purge and re-add all rules (internal implementation).
-     * @param ctx application context (mandatory)
-     * @param uidsWifi list of selected UIDs for WIFI to allow or disallow (depending on the working mode)
-     * @param uids3g list of selected UIDs for 2G/3G to allow or disallow (depending on the working mode)
-     * @param showErrors indicates if errors should be alerted
-     */
+	/**
+	 * Purge and re-add all rules (internal implementation).
+	 * @param ctx application context (mandatory)
+	 * @param uidsWifi list of selected UIDs for WIFI to allow or disallow (depending on the working mode)
+	 * @param uids3g list of selected UIDs for 2G/3G to allow or disallow (depending on the working mode)
+	 * @param showErrors indicates if errors should be alerted
+	 */
 	private static boolean applyIptablesRulesImpl(Context ctx, List<Integer> uidsWifi, List<Integer> uids3g, boolean showErrors) {
 		if (ctx == null) {
 			return false;
@@ -193,37 +191,37 @@ public final class Api {
 		final boolean logenabled = ctx.getSharedPreferences(PREFS_NAME, 0).getBoolean(PREF_LOGENABLED, false);
 		final String customScript = ctx.getSharedPreferences(Api.PREFS_NAME, 0).getString(Api.PREF_CUSTOMSCRIPT, "");
 
-    	final StringBuilder script = new StringBuilder();
+		final StringBuilder script = new StringBuilder();
 		try {
 			int code;
 			script.append(scriptHeader(ctx));
 			script.append("" +
-				"$IPTABLES --version || exit 1\n" +
-				"# Create the droidwall chains if necessary\n" +
-				"$IPTABLES -L droidwall >/dev/null 2>/dev/null || $IPTABLES --new droidwall || exit 2\n" +
-				"$IPTABLES -L droidwall-3g >/dev/null 2>/dev/null || $IPTABLES --new droidwall-3g || exit 3\n" +
-				"$IPTABLES -L droidwall-wifi >/dev/null 2>/dev/null || $IPTABLES --new droidwall-wifi || exit 4\n" +
-				"$IPTABLES -L droidwall-reject >/dev/null 2>/dev/null || $IPTABLES --new droidwall-reject || exit 5\n" +
-				"# Add droidwall chain to OUTPUT chain if necessary\n" +
-				"$IPTABLES -L OUTPUT | $GREP -q droidwall || $IPTABLES -A OUTPUT -j droidwall || exit 6\n" +
-				"# Flush existing rules\n" +
-				"$IPTABLES -F droidwall || exit 7\n" +
-				"$IPTABLES -F droidwall-3g || exit 8\n" +
-				"$IPTABLES -F droidwall-wifi || exit 9\n" +
-				"$IPTABLES -F droidwall-reject || exit 10\n" +
-			"");
+					"$IPTABLES --version || exit 1\n" +
+					"# Create the droidwall chains if necessary\n" +
+					"$IPTABLES -L droidwall >/dev/null 2>/dev/null || $IPTABLES --new droidwall || exit 2\n" +
+					"$IPTABLES -L droidwall-3g >/dev/null 2>/dev/null || $IPTABLES --new droidwall-3g || exit 3\n" +
+					"$IPTABLES -L droidwall-wifi >/dev/null 2>/dev/null || $IPTABLES --new droidwall-wifi || exit 4\n" +
+					"$IPTABLES -L droidwall-reject >/dev/null 2>/dev/null || $IPTABLES --new droidwall-reject || exit 5\n" +
+					"# Add droidwall chain to OUTPUT chain if necessary\n" +
+					"$IPTABLES -L OUTPUT | $GREP -q droidwall || $IPTABLES -A OUTPUT -j droidwall || exit 6\n" +
+					"# Flush existing rules\n" +
+					"$IPTABLES -F droidwall || exit 7\n" +
+					"$IPTABLES -F droidwall-3g || exit 8\n" +
+					"$IPTABLES -F droidwall-wifi || exit 9\n" +
+					"$IPTABLES -F droidwall-reject || exit 10\n" +
+					"");
 			// Check if logging is enabled
 			if (logenabled) {
 				script.append("" +
-					"# Create the log and reject rules (ignore errors on the LOG target just in case it is not available)\n" +
-					"$IPTABLES -A droidwall-reject -j LOG --log-prefix \"[DROIDWALL] \" --log-uid\n" +
-					"$IPTABLES -A droidwall-reject -j REJECT || exit 11\n" +
-				"");
+						"# Create the log and reject rules (ignore errors on the LOG target just in case it is not available)\n" +
+						"$IPTABLES -A droidwall-reject -j LOG --log-prefix \"[DROIDWALL] \" --log-uid\n" +
+						"$IPTABLES -A droidwall-reject -j REJECT || exit 11\n" +
+						"");
 			} else {
 				script.append("" +
-					"# Create the reject rule (log disabled)\n" +
-					"$IPTABLES -A droidwall-reject -j REJECT || exit 11\n" +
-				"");
+						"# Create the reject rule (log disabled)\n" +
+						"$IPTABLES -A droidwall-reject -j REJECT || exit 11\n" +
+						"");
 			}
 			if (customScript.length() > 0) {
 				script.append("\n# BEGIN OF CUSTOM SCRIPT (user-defined)\n");
@@ -241,7 +239,7 @@ public final class Api {
 			for (final String itf : ITFS_WIFI) {
 				script.append("$IPTABLES -A droidwall -o ").append(itf).append(" -j droidwall-wifi || exit\n");
 			}
-			
+
 			script.append("# Filtering rules\n");
 			final String targetRule = (whitelist ? "RETURN" : "droidwall-reject");
 			final boolean any_3g = uids3g.indexOf(SPECIAL_UID_ANY) >= 0;
@@ -310,7 +308,7 @@ public final class Api {
 					script.append("$IPTABLES -A droidwall-wifi -j droidwall-reject || exit\n");
 				}
 			}
-	    	final StringBuilder res = new StringBuilder();
+			final StringBuilder res = new StringBuilder();
 			code = runScriptAsRoot(ctx, script.toString(), res);
 			if (showErrors && code != 0) {
 				String msg = res.toString();
@@ -327,13 +325,13 @@ public final class Api {
 			if (showErrors) alert(ctx, "error refreshing iptables: " + e);
 		}
 		return false;
-    }
-    /**
-     * Purge and re-add all saved rules (not in-memory ones).
-     * This is much faster than just calling "applyIptablesRules", since it don't need to read installed applications.
-     * @param ctx application context (mandatory)
-     * @param showErrors indicates if errors should be alerted
-     */
+	}
+	/**
+	 * Purge and re-add all saved rules (not in-memory ones).
+	 * This is much faster than just calling "applyIptablesRules", since it don't need to read installed applications.
+	 * @param ctx application context (mandatory)
+	 * @param showErrors indicates if errors should be alerted
+	 */
 	public static boolean applySavedIptablesRules(Context ctx, boolean showErrors) {
 		if (ctx == null) {
 			return false;
@@ -371,20 +369,20 @@ public final class Api {
 		}
 		return applyIptablesRulesImpl(ctx, uids_wifi, uids_3g, showErrors);
 	}
-	
-    /**
-     * Purge and re-add all rules.
-     * @param ctx application context (mandatory)
-     * @param showErrors indicates if errors should be alerted
-     */
+
+	/**
+	 * Purge and re-add all rules.
+	 * @param ctx application context (mandatory)
+	 * @param showErrors indicates if errors should be alerted
+	 */
 	public static boolean applyIptablesRules(Context ctx, boolean showErrors) {
 		if (ctx == null) {
 			return false;
 		}
 		saveRules(ctx);
 		return applySavedIptablesRules(ctx, showErrors);
-    }
-	
+	}
+
 	/**
 	 * Save current rules using the preferences storage.
 	 * @param ctx application context (mandatory)
@@ -410,33 +408,33 @@ public final class Api {
 		edit.putString(PREF_WIFI_UIDS, newuids_wifi.toString());
 		edit.putString(PREF_3G_UIDS, newuids_3g.toString());
 		edit.commit();
-    }
-    
-    /**
-     * Purge all iptables rules.
-     * @param ctx mandatory context
-     * @param showErrors indicates if errors should be alerted
-     * @return true if the rules were purged
-     */
+	}
+
+	/**
+	 * Purge all iptables rules.
+	 * @param ctx mandatory context
+	 * @param showErrors indicates if errors should be alerted
+	 * @return true if the rules were purged
+	 */
 	public static boolean purgeIptables(Context ctx, boolean showErrors) {
-    	final StringBuilder res = new StringBuilder();
+		final StringBuilder res = new StringBuilder();
 		try {
 			assertBinaries(ctx, showErrors);
 			// Custom "shutdown" script
 			final String customScript = ctx.getSharedPreferences(Api.PREFS_NAME, 0).getString(Api.PREF_CUSTOMSCRIPT2, "");
-	    	final StringBuilder script = new StringBuilder();
-	    	script.append(scriptHeader(ctx));
-	    	script.append("" +
+			final StringBuilder script = new StringBuilder();
+			script.append(scriptHeader(ctx));
+			script.append("" +
 					"$IPTABLES -F droidwall\n" +
 					"$IPTABLES -F droidwall-reject\n" +
 					"$IPTABLES -F droidwall-3g\n" +
 					"$IPTABLES -F droidwall-wifi\n" +
-	    			"");
-	    	if (customScript.length() > 0) {
+					"");
+			if (customScript.length() > 0) {
 				script.append("\n# BEGIN OF CUSTOM SCRIPT (user-defined)\n");
 				script.append(customScript);
 				script.append("\n# END OF CUSTOM SCRIPT (user-defined)\n\n");
-	    	}
+			}
 			int code = runScriptAsRoot(ctx, script.toString(), res);
 			if (code == -1) {
 				if (showErrors) alert(ctx, "Error purging iptables. exit code: " + code + "\n" + res);
@@ -447,18 +445,18 @@ public final class Api {
 			if (showErrors) alert(ctx, "Error purging iptables: " + e);
 			return false;
 		}
-    }
-	
+	}
+
 	/**
 	 * Display iptables rules output
 	 * @param ctx application context
 	 */
 	public static void showIptablesRules(Context ctx) {
 		try {
-    		final StringBuilder res = new StringBuilder();
+			final StringBuilder res = new StringBuilder();
 			runScriptAsRoot(ctx, scriptHeader(ctx) +
-								 "$ECHO $IPTABLES\n" +
-								 "$IPTABLES -L -v -n\n", res);
+					"$ECHO $IPTABLES\n" +
+					"$IPTABLES -L -v -n\n", res);
 			alert(ctx, res);
 		} catch (Exception e) {
 			alert(ctx, "error: " + e);
@@ -468,7 +466,7 @@ public final class Api {
 	/**
 	 * Display logs
 	 * @param ctx application context
-     * @return true if the clogs were cleared
+	 * @return true if the clogs were cleared
 	 */
 	public static boolean clearLog(Context ctx) {
 		try {
@@ -490,7 +488,7 @@ public final class Api {
 	 */
 	public static void showLog(Context ctx) {
 		try {
-    		StringBuilder res = new StringBuilder();
+			StringBuilder res = new StringBuilder();
 			int code = runScriptAsRoot(ctx, scriptHeader(ctx) +
 					"dmesg | $GREP DROIDWALL\n", res);
 			if (code != 0) {
@@ -573,10 +571,10 @@ public final class Api {
 		}
 	}
 
-    /**
-     * @param ctx application context (mandatory)
-     * @return a list of applications
-     */
+	/**
+	 * @param ctx application context (mandatory)
+	 * @return a list of applications
+	 */
 	public static DroidApp[] getApps(Context ctx) {
 		if (applications != null) {
 			// return cached instance
@@ -674,13 +672,13 @@ public final class Api {
 			}
 			/* add special applications to the list */
 			final DroidApp special[] = {
-				new DroidApp(SPECIAL_UID_ANY,"(Any application) - Same as selecting all applications", false, false),
-				new DroidApp(SPECIAL_UID_KERNEL,"(Kernel) - Linux kernel", false, false),
-				new DroidApp(android.os.Process.getUidForName("root"), "(root) - Applications running as root", false, false),
-				new DroidApp(android.os.Process.getUidForName("media"), "Media server", false, false),
-				new DroidApp(android.os.Process.getUidForName("vpn"), "VPN networking", false, false),
-				new DroidApp(android.os.Process.getUidForName("shell"), "Linux shell", false, false),
-				new DroidApp(android.os.Process.getUidForName("gps"), "GPS", false, false),
+					new DroidApp(SPECIAL_UID_ANY,"(Any application) - Same as selecting all applications", false, false),
+					new DroidApp(SPECIAL_UID_KERNEL,"(Kernel) - Linux kernel", false, false),
+					new DroidApp(android.os.Process.getUidForName("root"), "(root) - Applications running as root", false, false),
+					new DroidApp(android.os.Process.getUidForName("media"), "Media server", false, false),
+					new DroidApp(android.os.Process.getUidForName("vpn"), "VPN networking", false, false),
+					new DroidApp(android.os.Process.getUidForName("shell"), "Linux shell", false, false),
+					new DroidApp(android.os.Process.getUidForName("gps"), "GPS", false, false),
 			};
 			for (int i=0; i<special.length; i++) {
 				app = special[i];
@@ -706,7 +704,7 @@ public final class Api {
 	/**
 	 * Check if we have root access
 	 * @param ctx mandatory context
-     * @param showErrors indicates if errors should be alerted
+	 * @param showErrors indicates if errors should be alerted
 	 * @return boolean true if we have root
 	 */
 	public static boolean hasRootAccess(final Context ctx, boolean showErrors) {
@@ -722,20 +720,20 @@ public final class Api {
 		}
 		if (showErrors) {
 			alert(ctx, "Could not acquire root access.\n" +
-				"You need a rooted phone to run DroidWall.\n\n" +
-				"If this phone is already rooted, please make sure DroidWall has enough permissions to execute the \"su\" command.\n" +
-				"Error message: " + res.toString());
+					"You need a rooted phone to run DroidWall.\n\n" +
+					"If this phone is already rooted, please make sure DroidWall has enough permissions to execute the \"su\" command.\n" +
+					"Error message: " + res.toString());
 		}
 		return false;
 	}
-    /**
-     * Runs a script, wither as root or as a regular user (multiple commands separated by "\n").
+	/**
+	 * Runs a script, wither as root or as a regular user (multiple commands separated by "\n").
 	 * @param ctx mandatory context
-     * @param script the script to be executed
-     * @param res the script output response (stdout + stderr)
-     * @param timeout timeout in milliseconds (-1 for none)
-     * @return the script exit code
-     */
+	 * @param script the script to be executed
+	 * @param res the script output response (stdout + stderr)
+	 * @param timeout timeout in milliseconds (-1 for none)
+	 * @return the script exit code
+	 */
 	public static int runScript(Context ctx, String script, StringBuilder res, long timeout, boolean asroot) {
 		final File file = new File(ctx.getDir("bin",0), SCRIPT_FILE);
 		final ScriptRunner runner = new ScriptRunner(file, script, res, asroot);
@@ -756,45 +754,45 @@ public final class Api {
 		} catch (InterruptedException ex) {}
 		return runner.exitcode;
 	}
-    /**
-     * Runs a script as root (multiple commands separated by "\n").
+	/**
+	 * Runs a script as root (multiple commands separated by "\n").
 	 * @param ctx mandatory context
-     * @param script the script to be executed
-     * @param res the script output response (stdout + stderr)
-     * @param timeout timeout in milliseconds (-1 for none)
-     * @return the script exit code
-     */
+	 * @param script the script to be executed
+	 * @param res the script output response (stdout + stderr)
+	 * @param timeout timeout in milliseconds (-1 for none)
+	 * @return the script exit code
+	 */
 	public static int runScriptAsRoot(Context ctx, String script, StringBuilder res, long timeout) {
 		return runScript(ctx, script, res, timeout, true);
-    }
-    /**
-     * Runs a script as root (multiple commands separated by "\n") with a default timeout of 20 seconds.
+	}
+	/**
+	 * Runs a script as root (multiple commands separated by "\n") with a default timeout of 20 seconds.
 	 * @param ctx mandatory context
-     * @param script the script to be executed
-     * @param res the script output response (stdout + stderr)
-     * @param timeout timeout in milliseconds (-1 for none)
-     * @return the script exit code
-     * @throws IOException on any error executing the script, or writing it to disk
-     */
+	 * @param script the script to be executed
+	 * @param res the script output response (stdout + stderr)
+	 * @param timeout timeout in milliseconds (-1 for none)
+	 * @return the script exit code
+	 * @throws IOException on any error executing the script, or writing it to disk
+	 */
 	public static int runScriptAsRoot(Context ctx, String script, StringBuilder res) throws IOException {
 		return runScriptAsRoot(ctx, script, res, 40000);
 	}
-    /**
-     * Runs a script as a regular user (multiple commands separated by "\n") with a default timeout of 20 seconds.
+	/**
+	 * Runs a script as a regular user (multiple commands separated by "\n") with a default timeout of 20 seconds.
 	 * @param ctx mandatory context
-     * @param script the script to be executed
-     * @param res the script output response (stdout + stderr)
-     * @param timeout timeout in milliseconds (-1 for none)
-     * @return the script exit code
-     * @throws IOException on any error executing the script, or writing it to disk
-     */
+	 * @param script the script to be executed
+	 * @param res the script output response (stdout + stderr)
+	 * @param timeout timeout in milliseconds (-1 for none)
+	 * @return the script exit code
+	 * @throws IOException on any error executing the script, or writing it to disk
+	 */
 	public static int runScript(Context ctx, String script, StringBuilder res) throws IOException {
 		return runScript(ctx, script, res, 40000, false);
 	}
 	/**
 	 * Asserts that the binary files are installed in the cache directory.
 	 * @param ctx context
-     * @param showErrors indicates if errors should be alerted
+	 * @param showErrors indicates if errors should be alerted
 	 * @return false if the binary files could not be installed
 	 */
 	public static boolean assertBinaries(Context ctx, boolean showErrors) {
@@ -830,7 +828,7 @@ public final class Api {
 		if (ctx == null) return false;
 		return ctx.getSharedPreferences(PREFS_NAME, 0).getBoolean(PREF_ENABLED, false);
 	}
-	
+
 	/**
 	 * Defines if the firewall is enabled and broadcasts the new status
 	 * @param ctx mandatory context
@@ -850,8 +848,8 @@ public final class Api {
 		}
 		/* notify */
 		final Intent message = new Intent(Api.STATUS_CHANGED_MSG);
-        message.putExtra(Api.STATUS_EXTRA, enabled);
-        ctx.sendBroadcast(message);
+		message.putExtra(Api.STATUS_EXTRA, enabled);
+		ctx.sendBroadcast(message);
 	}
 	/**
 	 * Called when an application in removed (un-installed) from the system.
@@ -913,58 +911,58 @@ public final class Api {
 		}
 	}
 
-    /**
-     * Small structure to hold an application info
-     */
+	/**
+	 * Small structure to hold an application info
+	 */
 	public static final class DroidApp {
 		/** linux user id */
-    	int uid;
-    	/** application names belonging to this user id */
-    	String names[];
-    	/** indicates if this application is selected for wifi */
-    	boolean selected_wifi;
-    	/** indicates if this application is selected for 3g */
-    	boolean selected_3g;
-    	/** toString cache */
-    	String tostr;
-    	/** application info */
-    	ApplicationInfo appinfo;
-    	/** cached application icon */
-    	Drawable cached_icon;
-    	/** indicates if the icon has been loaded already */
-    	boolean icon_loaded;
-    	/** first time seem? */
-    	boolean firstseem;
-    	
-    	public DroidApp() {
-    	}
-    	public DroidApp(int uid, String name, boolean selected_wifi, boolean selected_3g) {
-    		this.uid = uid;
-    		this.names = new String[] {name};
-    		this.selected_wifi = selected_wifi;
-    		this.selected_3g = selected_3g;
-    	}
-    	/**
-    	 * Screen representation of this application
-    	 */
-    	@Override
-    	public String toString() {
-    		if (tostr == null) {
-        		final StringBuilder s = new StringBuilder();
-        		if (uid > 0) s.append(uid + ": ");
-        		for (int i=0; i<names.length; i++) {
-        			if (i != 0) s.append(", ");
-        			s.append(names[i]);
-        		}
-        		s.append("\n");
-        		tostr = s.toString();
-    		}
-    		return tostr;
-    	}
-    }
-    /**
-     * Small internal structure used to hold log information
-     */
+		int uid;
+		/** application names belonging to this user id */
+		String names[];
+		/** indicates if this application is selected for wifi */
+		boolean selected_wifi;
+		/** indicates if this application is selected for 3g */
+		boolean selected_3g;
+		/** toString cache */
+		String tostr;
+		/** application info */
+		ApplicationInfo appinfo;
+		/** cached application icon */
+		Drawable cached_icon;
+		/** indicates if the icon has been loaded already */
+		boolean icon_loaded;
+		/** first time seem? */
+		boolean firstseem;
+
+		public DroidApp() {
+		}
+		public DroidApp(int uid, String name, boolean selected_wifi, boolean selected_3g) {
+			this.uid = uid;
+			this.names = new String[] {name};
+			this.selected_wifi = selected_wifi;
+			this.selected_3g = selected_3g;
+		}
+		/**
+		 * Screen representation of this application
+		 */
+		@Override
+		public String toString() {
+			if (tostr == null) {
+				final StringBuilder s = new StringBuilder();
+				if (uid > 0) s.append(uid + ": ");
+				for (int i=0; i<names.length; i++) {
+					if (i != 0) s.append(", ");
+					s.append(names[i]);
+				}
+				s.append("\n");
+				tostr = s.toString();
+			}
+			return tostr;
+		}
+	}
+	/**
+	 * Small internal structure used to hold log information
+	 */
 	private static final class LogInfo {
 		private int totalBlocked; // Total number of packets blocked
 		private HashMap<String, Integer> dstBlocked; // Number of packets blocked per destination IP address
@@ -982,7 +980,7 @@ public final class Api {
 		private final boolean asroot;
 		public int exitcode = -1;
 		private Process exec;
-		
+
 		/**
 		 * Creates a new script runner.
 		 * @param file temporary script file

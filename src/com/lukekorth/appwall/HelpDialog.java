@@ -21,8 +21,6 @@
  */
 package com.lukekorth.appwall;
 
-import com.googlecode.droidwall.R;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.view.View;

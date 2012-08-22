@@ -22,8 +22,6 @@
  */
 package com.lukekorth.appwall;
 
-import com.googlecode.droidwall.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -61,7 +59,7 @@ public class CustomScriptActivity extends Activity implements OnClickListener {
 		setTitle(R.string.set_custom_script);
 		setContentView(view);
 	}
-	
+
 	/**
 	 * Set the activity result to RESULT_OK and terminate this activity.
 	 */
@@ -108,8 +106,8 @@ public class CustomScriptActivity extends Activity implements OnClickListener {
 			};
 			final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.unsaved_changes).setMessage(R.string.unsaved_changes_message)
-					.setPositiveButton(R.string.apply, dialogClickListener)
-					.setNegativeButton(R.string.discard, dialogClickListener).show();
+			.setPositiveButton(R.string.apply, dialogClickListener)
+			.setNegativeButton(R.string.discard, dialogClickListener).show();
 			// Say that we've consumed the event
 			return true;
 		}
