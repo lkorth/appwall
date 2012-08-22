@@ -7,7 +7,6 @@
     <string name="applyrules">Apply rules</string>
     <string name="saverules">Save rules</string>
     <string name="purgerules">Purge rules</string>
-    <string name="setpwd">Set password</string>
     <string name="help">Help</string>
     <string name="close">Close</string>
     <string name="exit">Exit</string>
@@ -26,13 +25,6 @@
     <string name="rules_applied">Rules applied with success</string>
     <string name="rules_saved">Rules saved with success</string>
     <string name="rules_deleted">Rules deleted with success</string>
-    <string name="pass_titleset">Set password lock</string>
-    <string name="pass_titleget">Password required</string>
-    <string name="enterpass">Enter the password:</string>
-    <string name="enternewpass">Enter the new password (leave blank to remove):</string>
-    <string name="passdefined">Password lock defined</string>
-    <string name="passremoved">Password lock removed</string>
-    <string name="passerror">Error changing password lock</string>
     <string name="working">Working...</string>
     <string name="reading_apps">Reading installed applications</string>
     <string name="please_wait">Please wait</string>
@@ -80,9 +72,6 @@
 		\nIf you want to see which applications have been blocked by DroidWall, open the menu and enable the Log.
 		\nDroidWall will then log each application blocked. You can check the log by opening the menu and selecting <b>More -> Show log</b>.
 		\n
-		\n<b>Password lock:</b>
-		\nYou can set a password lock for DroidWall by using the <b>Set password</b> menu option.
-		\nTo remove the password protection, just reset it to blank.
 	</string>
 	<string name="empty"></string>
 	<string name="mode">Mode: </string>

@@ -56,11 +56,6 @@ public class StatusWidget extends AppWidgetProvider {
 			// Broadcast sent to request toggling DroidWall's status
 			final SharedPreferences prefs = context.getSharedPreferences(Api.PREFS_NAME, 0);
 			final boolean enabled = !prefs.getBoolean(Api.PREF_ENABLED, true);
-			final String pwd = prefs.getString(Api.PREF_PASSWORD, "");
-			if (!enabled && pwd.length() != 0) {
-				Toast.makeText(context, "Cannot disable firewall - password defined!", Toast.LENGTH_SHORT).show();
-				return;
-			}
 			final Handler toaster = new Handler() {
 				public void handleMessage(Message msg) {
 					if (msg.arg1 != 0) Toast.makeText(context, msg.arg1, Toast.LENGTH_SHORT).show();

@@ -75,8 +75,7 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 	private static final int MENU_SHOWLOG	= 5;
 	private static final int MENU_SHOWRULES	= 6;
 	private static final int MENU_CLEARLOG	= 7;
-	private static final int MENU_SETPWD	= 8;
-	private static final int MENU_SETCUSTOM = 9;
+	private static final int MENU_SETCUSTOM = 8;
 
 	/** progress dialog instance */
 	private ListView listview = null;
@@ -105,14 +104,7 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 			this.listview = (ListView) this.findViewById(R.id.listview);
 		}
 		refreshHeader();
-		final String pwd = getSharedPreferences(Api.PREFS_NAME, 0).getString(Api.PREF_PASSWORD, "");
-		if (pwd.length() == 0) {
-			// No password lock
-			showOrLoadApplications();
-		} else {
-			// Check the password
-			requestPassword(pwd);
-		}
+		showOrLoadApplications();
 	}
 	@Override
 	protected void onPause() {
@@ -169,47 +161,6 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 			}
 		}).setTitle("Select mode:")
 		.show();
-	}
-	/**
-	 * Set a new password lock
-	 * @param pwd new password (empty to remove the lock)
-	 */
-	private void setPassword(String pwd) {
-		final Resources res = getResources();
-		final Editor editor = getSharedPreferences(Api.PREFS_NAME, 0).edit();
-		editor.putString(Api.PREF_PASSWORD, pwd);
-		String msg;
-		if (editor.commit()) {
-			if (pwd.length() > 0) {
-				msg = res.getString(R.string.passdefined);
-			} else {
-				msg = res.getString(R.string.passremoved);
-			}
-		} else {
-			msg = res.getString(R.string.passerror);
-		}
-		Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-	}
-	/**
-	 * Request the password lock before displayed the main screen.
-	 */
-	private void requestPassword(final String pwd) {
-		new PassDialog(this, false, new android.os.Handler.Callback() {
-			public boolean handleMessage(Message msg) {
-				if (msg.obj == null) {
-					MainActivity.this.finish();
-					android.os.Process.killProcess(android.os.Process.myPid());
-					return false;
-				}
-				if (!pwd.equals(msg.obj)) {
-					requestPassword(pwd);
-					return false;
-				}
-				// Password correct
-				showOrLoadApplications();
-				return false;
-			}
-		}).show();
 	}
 	/**
 	 * Toggle iptables log enabled/disabled
@@ -320,7 +271,6 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 		menu.add(0, MENU_SHOWLOG, 0, R.string.show_log).setIcon(R.drawable.show);
 		menu.add(0, MENU_SHOWRULES, 0, R.string.showrules).setIcon(R.drawable.show);
 		menu.add(0, MENU_CLEARLOG, 0, R.string.clear_log).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
-		menu.add(0, MENU_SETPWD, 0, R.string.setpwd).setIcon(android.R.drawable.ic_lock_lock);
 		menu.add(0, MENU_SETCUSTOM, 0, R.string.set_custom_script);
 
 		return true;
@@ -369,9 +319,6 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 		case MENU_HELP:
 			new HelpDialog(this).show();
 			return true;
-		case MENU_SETPWD:
-			setPassword();
-			return true;
 		case MENU_SHOWLOG:
 			showLog();
 			return true;
@@ -390,7 +337,7 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 	/**
 	 * Enables or disables the firewall
 	 */
-	 private void disableOrEnable() {
+	private void disableOrEnable() {
 		final boolean enabled = !Api.isEnabled(this);
 		Log.d("DroidWall", "Changing enabled status to: " + enabled);
 		Api.setEnabled(this, enabled);
@@ -400,261 +347,248 @@ public class MainActivity extends Activity implements OnCheckedChangeListener, O
 			purgeRules();
 		}
 		refreshHeader();
-	 }
-	 /**
-	  * Set a new lock password
-	  */
-	 private void setPassword() {
-		 new PassDialog(this, true, new android.os.Handler.Callback() {
-			 public boolean handleMessage(Message msg) {
-				 if (msg.obj != null) {
-					 setPassword((String)msg.obj);
-				 }
-				 return false;
-			 }
-		 }).show();
-	 }
+	}
 
-	 /**
-	  * Set a new init script
-	  */
-	 private void setCustomScript(){
-		 Intent intent = new Intent();
-		 intent.setClass(this, CustomScriptActivity.class);
-		 startActivityForResult(intent, 0);
-	 }
-	 @Override
-	 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		 super.onActivityResult(requestCode, resultCode, data);
-		 if (resultCode == RESULT_OK && Api.CUSTOM_SCRIPT_MSG.equals(data.getAction())) {
-			 final String script = data.getStringExtra(Api.SCRIPT_EXTRA);
-			 final String script2 = data.getStringExtra(Api.SCRIPT2_EXTRA);
-			 setCustomScript(script, script2);
-		 }
-	 }
+	/**
+	 * Set a new init script
+	 */
+	private void setCustomScript(){
+		Intent intent = new Intent();
+		intent.setClass(this, CustomScriptActivity.class);
+		startActivityForResult(intent, 0);
+	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK && Api.CUSTOM_SCRIPT_MSG.equals(data.getAction())) {
+			final String script = data.getStringExtra(Api.SCRIPT_EXTRA);
+			final String script2 = data.getStringExtra(Api.SCRIPT2_EXTRA);
+			setCustomScript(script, script2);
+		}
+	}
 
-	 /**
-	  * Set a new init script
-	  * @param script new script (empty to remove)
-	  * @param script2 new "shutdown" script  (empty to remove)
-	  */
-	 private void setCustomScript(String script, String script2) {
-		 final Editor editor = getSharedPreferences(Api.PREFS_NAME, 0).edit();
-		 // Remove unnecessary white-spaces, also replace '\r\n' if necessary
-		 script = script.trim().replace("\r\n", "\n");
-		 script2 = script2.trim().replace("\r\n", "\n");
-		 editor.putString(Api.PREF_CUSTOMSCRIPT, script);
-		 editor.putString(Api.PREF_CUSTOMSCRIPT2, script2);
-		 int msgid;
-		 if (editor.commit()) {
-			 if (script.length() > 0 || script2.length() > 0) {
-				 msgid = R.string.custom_script_defined;
-			 } else {
-				 msgid = R.string.custom_script_removed;
-			 }
-		 } else {
-			 msgid = R.string.custom_script_error;
-		 }
-		 Toast.makeText(MainActivity.this, msgid, Toast.LENGTH_SHORT).show();
-		 if (Api.isEnabled(this)) {
-			 // If the firewall is enabled, re-apply the rules
-			 applyOrSaveRules();
-		 }
-	 }
+	/**
+	 * Set a new init script
+	 * @param script new script (empty to remove)
+	 * @param script2 new "shutdown" script  (empty to remove)
+	 */
+	private void setCustomScript(String script, String script2) {
+		final Editor editor = getSharedPreferences(Api.PREFS_NAME, 0).edit();
+		// Remove unnecessary white-spaces, also replace '\r\n' if necessary
+		script = script.trim().replace("\r\n", "\n");
+		script2 = script2.trim().replace("\r\n", "\n");
+		editor.putString(Api.PREF_CUSTOMSCRIPT, script);
+		editor.putString(Api.PREF_CUSTOMSCRIPT2, script2);
+		int msgid;
+		if (editor.commit()) {
+			if (script.length() > 0 || script2.length() > 0) {
+				msgid = R.string.custom_script_defined;
+			} else {
+				msgid = R.string.custom_script_removed;
+			}
+		} else {
+			msgid = R.string.custom_script_error;
+		}
+		Toast.makeText(MainActivity.this, msgid, Toast.LENGTH_SHORT).show();
+		if (Api.isEnabled(this)) {
+			// If the firewall is enabled, re-apply the rules
+			applyOrSaveRules();
+		}
+	}
 
-	 /**
-	  * Show iptable rules on a dialog
-	  */
-	 private void showRules() {
-		 final Resources res = getResources();
-		 final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.please_wait), true);
-		 final Handler handler = new Handler() {
-			 public void handleMessage(Message msg) {
-				 try {progress.dismiss();} catch(Exception ex){}
-				 if (!Api.hasRootAccess(MainActivity.this, true)) return;
-				 Api.showIptablesRules(MainActivity.this);
-			 }
-		 };
-		 handler.sendEmptyMessageDelayed(0, 100);
-	 }
-	 /**
-	  * Show logs on a dialog
-	  */
-	 private void showLog() {
-		 final Resources res = getResources();
-		 final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.please_wait), true);
-		 final Handler handler = new Handler() {
-			 public void handleMessage(Message msg) {
-				 try {progress.dismiss();} catch(Exception ex){}
-				 Api.showLog(MainActivity.this);
-			 }
-		 };
-		 handler.sendEmptyMessageDelayed(0, 100);
-	 }
-	 /**
-	  * Clear logs
-	  */
-	 private void clearLog() {
-		 final Resources res = getResources();
-		 final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.please_wait), true);
-		 final Handler handler = new Handler() {
-			 public void handleMessage(Message msg) {
-				 try {progress.dismiss();} catch(Exception ex){}
-				 if (!Api.hasRootAccess(MainActivity.this, true)) return;
-				 if (Api.clearLog(MainActivity.this)) {
-					 Toast.makeText(MainActivity.this, R.string.log_cleared, Toast.LENGTH_SHORT).show();
-				 }
-			 }
-		 };
-		 handler.sendEmptyMessageDelayed(0, 100);
-	 }
-	 /**
-	  * Apply or save iptable rules, showing a visual indication
-	  */
-	 private void applyOrSaveRules() {
-		 final Resources res = getResources();
-		 final boolean enabled = Api.isEnabled(this);
-		 final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(enabled?R.string.applying_rules:R.string.saving_rules), true);
-		 final Handler handler = new Handler() {
-			 public void handleMessage(Message msg) {
-				 try {progress.dismiss();} catch(Exception ex){}
-				 if (enabled) {
-					 Log.d("DroidWall", "Applying rules.");
-					 if (Api.hasRootAccess(MainActivity.this, true) && Api.applyIptablesRules(MainActivity.this, true)) {
-						 Toast.makeText(MainActivity.this, R.string.rules_applied, Toast.LENGTH_SHORT).show();
-					 } else {
-						 Log.d("DroidWall", "Failed - Disabling firewall.");
-						 Api.setEnabled(MainActivity.this, false);
-					 }
-				 } else {
-					 Log.d("DroidWall", "Saving rules.");
-					 Api.saveRules(MainActivity.this);
-					 Toast.makeText(MainActivity.this, R.string.rules_saved, Toast.LENGTH_SHORT).show();
-				 }
-				 MainActivity.this.dirty = false;
-			 }
-		 };
-		 handler.sendEmptyMessageDelayed(0, 100);
-	 }
-	 /**
-	  * Purge iptable rules, showing a visual indication
-	  */
-	 private void purgeRules() {
-		 final Resources res = getResources();
-		 final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.deleting_rules), true);
-		 final Handler handler = new Handler() {
-			 public void handleMessage(Message msg) {
-				 try {progress.dismiss();} catch(Exception ex){}
-				 if (!Api.hasRootAccess(MainActivity.this, true)) return;
-				 if (Api.purgeIptables(MainActivity.this, true)) {
-					 Toast.makeText(MainActivity.this, R.string.rules_deleted, Toast.LENGTH_SHORT).show();
-				 }
-			 }
-		 };
-		 handler.sendEmptyMessageDelayed(0, 100);
-	 }
-	 /**
-	  * Called an application is check/unchecked
-	  */
-	 @Override
-	 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		 final DroidApp app = (DroidApp) buttonView.getTag();
-		 if (app != null) {
-			 switch (buttonView.getId()) {
-			 case R.id.itemcheck_wifi:
-				 if (app.selected_wifi != isChecked) {
-					 app.selected_wifi = isChecked;
-					 this.dirty = true;
-				 }
-				 break;
-			 case R.id.itemcheck_3g:
-				 if (app.selected_3g != isChecked) {
-					 app.selected_3g = isChecked;
-					 this.dirty = true;
-				 }
-				 break;
-			 }
-		 }
-	 }
+	/**
+	 * Show iptable rules on a dialog
+	 */
+	private void showRules() {
+		final Resources res = getResources();
+		final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				try {progress.dismiss();} catch(Exception ex){}
+				if (!Api.hasRootAccess(MainActivity.this, true)) return;
+				Api.showIptablesRules(MainActivity.this);
+			}
+		};
+		handler.sendEmptyMessageDelayed(0, 100);
+	}
+	/**
+	 * Show logs on a dialog
+	 */
+	private void showLog() {
+		final Resources res = getResources();
+		final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				try {progress.dismiss();} catch(Exception ex){}
+				Api.showLog(MainActivity.this);
+			}
+		};
+		handler.sendEmptyMessageDelayed(0, 100);
+	}
+	/**
+	 * Clear logs
+	 */
+	private void clearLog() {
+		final Resources res = getResources();
+		final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.please_wait), true);
+		final Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				try {progress.dismiss();} catch(Exception ex){}
+				if (!Api.hasRootAccess(MainActivity.this, true)) return;
+				if (Api.clearLog(MainActivity.this)) {
+					Toast.makeText(MainActivity.this, R.string.log_cleared, Toast.LENGTH_SHORT).show();
+				}
+			}
+		};
+		handler.sendEmptyMessageDelayed(0, 100);
+	}
+	/**
+	 * Apply or save iptable rules, showing a visual indication
+	 */
+	private void applyOrSaveRules() {
+		final Resources res = getResources();
+		final boolean enabled = Api.isEnabled(this);
+		final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(enabled?R.string.applying_rules:R.string.saving_rules), true);
+		final Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				try {progress.dismiss();} catch(Exception ex){}
+				if (enabled) {
+					Log.d("DroidWall", "Applying rules.");
+					if (Api.hasRootAccess(MainActivity.this, true) && Api.applyIptablesRules(MainActivity.this, true)) {
+						Toast.makeText(MainActivity.this, R.string.rules_applied, Toast.LENGTH_SHORT).show();
+					} else {
+						Log.d("DroidWall", "Failed - Disabling firewall.");
+						Api.setEnabled(MainActivity.this, false);
+					}
+				} else {
+					Log.d("DroidWall", "Saving rules.");
+					Api.saveRules(MainActivity.this);
+					Toast.makeText(MainActivity.this, R.string.rules_saved, Toast.LENGTH_SHORT).show();
+				}
+				MainActivity.this.dirty = false;
+			}
+		};
+		handler.sendEmptyMessageDelayed(0, 100);
+	}
+	/**
+	 * Purge iptable rules, showing a visual indication
+	 */
+	private void purgeRules() {
+		final Resources res = getResources();
+		final ProgressDialog progress = ProgressDialog.show(this, res.getString(R.string.working), res.getString(R.string.deleting_rules), true);
+		final Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				try {progress.dismiss();} catch(Exception ex){}
+				if (!Api.hasRootAccess(MainActivity.this, true)) return;
+				if (Api.purgeIptables(MainActivity.this, true)) {
+					Toast.makeText(MainActivity.this, R.string.rules_deleted, Toast.LENGTH_SHORT).show();
+				}
+			}
+		};
+		handler.sendEmptyMessageDelayed(0, 100);
+	}
+	/**
+	 * Called an application is check/unchecked
+	 */
+	@Override
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		final DroidApp app = (DroidApp) buttonView.getTag();
+		if (app != null) {
+			switch (buttonView.getId()) {
+			case R.id.itemcheck_wifi:
+				if (app.selected_wifi != isChecked) {
+					app.selected_wifi = isChecked;
+					this.dirty = true;
+				}
+				break;
+			case R.id.itemcheck_3g:
+				if (app.selected_3g != isChecked) {
+					app.selected_3g = isChecked;
+					this.dirty = true;
+				}
+				break;
+			}
+		}
+	}
 
-	 @Override
-	 public void onClick(View v) {
-		 switch (v.getId()) {
-		 case R.id.label_mode:
-			 selectMode();
-			 break;
-		 }
-	 }
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.label_mode:
+			selectMode();
+			break;
+		}
+	}
 
-	 @Override
-	 public boolean onKeyDown(final int keyCode, final KeyEvent event) {
-		 // Handle the back button when dirty
-		 if (this.dirty && (keyCode == KeyEvent.KEYCODE_BACK)) {
-			 final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-				 @Override
-				 public void onClick(DialogInterface dialog, int which) {
-					 switch (which) {
-					 case DialogInterface.BUTTON_POSITIVE:
-						 applyOrSaveRules();
-						 break;
-					 case DialogInterface.BUTTON_NEGATIVE:
-						 // Propagate the event back to perform the desired action
-						 MainActivity.super.onKeyDown(keyCode, event);
-						 break;
-					 }
-				 }
-			 };
-			 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			 builder.setTitle(R.string.unsaved_changes).setMessage(R.string.unsaved_changes_message)
-			 .setPositiveButton(R.string.apply, dialogClickListener)
-			 .setNegativeButton(R.string.discard, dialogClickListener).show();
-			 // Say that we've consumed the event
-			 return true;
-		 }
-		 return super.onKeyDown(keyCode, event);
-	 }
-	 /**
-	  * Asynchronous task used to load icons in a background thread.
-	  */
-	 private static class LoadIconTask extends AsyncTask<Object, Void, View> {
-		 @Override
-		 protected View doInBackground(Object... params) {
-			 try {
-				 final DroidApp app = (DroidApp) params[0];
-				 final PackageManager pkgMgr = (PackageManager) params[1];
-				 final View viewToUpdate = (View) params[2];
-				 if (!app.icon_loaded) {
-					 app.cached_icon = pkgMgr.getApplicationIcon(app.appinfo);
-					 app.icon_loaded = true;
-				 }
-				 // Return the view to update at "onPostExecute"
-				 // Note that we cannot be sure that this view still references "app"
-				 return viewToUpdate;
-			 } catch (Exception e) {
-				 Log.e("DroidWall", "Error loading icon", e);
-				 return null;
-			 }
-		 }
-		 protected void onPostExecute(View viewToUpdate) {
-			 try {
-				 // This is executed in the UI thread, so it is safe to use viewToUpdate.getTag()
-				 // and modify the UI
-				 final ListEntry entryToUpdate = (ListEntry) viewToUpdate.getTag();
-				 entryToUpdate.icon.setImageDrawable(entryToUpdate.app.cached_icon);
-			 } catch (Exception e) {
-				 Log.e("DroidWall", "Error showing icon", e);
-			 }
-		 };
-	 }
+	@Override
+	public boolean onKeyDown(final int keyCode, final KeyEvent event) {
+		// Handle the back button when dirty
+		if (this.dirty && (keyCode == KeyEvent.KEYCODE_BACK)) {
+			final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case DialogInterface.BUTTON_POSITIVE:
+						applyOrSaveRules();
+						break;
+					case DialogInterface.BUTTON_NEGATIVE:
+						// Propagate the event back to perform the desired action
+						MainActivity.super.onKeyDown(keyCode, event);
+						break;
+					}
+				}
+			};
+			final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.unsaved_changes).setMessage(R.string.unsaved_changes_message)
+			.setPositiveButton(R.string.apply, dialogClickListener)
+			.setNegativeButton(R.string.discard, dialogClickListener).show();
+			// Say that we've consumed the event
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+	/**
+	 * Asynchronous task used to load icons in a background thread.
+	 */
+	private static class LoadIconTask extends AsyncTask<Object, Void, View> {
+		@Override
+		protected View doInBackground(Object... params) {
+			try {
+				final DroidApp app = (DroidApp) params[0];
+				final PackageManager pkgMgr = (PackageManager) params[1];
+				final View viewToUpdate = (View) params[2];
+				if (!app.icon_loaded) {
+					app.cached_icon = pkgMgr.getApplicationIcon(app.appinfo);
+					app.icon_loaded = true;
+				}
+				// Return the view to update at "onPostExecute"
+				// Note that we cannot be sure that this view still references "app"
+				return viewToUpdate;
+			} catch (Exception e) {
+				Log.e("DroidWall", "Error loading icon", e);
+				return null;
+			}
+		}
+		protected void onPostExecute(View viewToUpdate) {
+			try {
+				// This is executed in the UI thread, so it is safe to use viewToUpdate.getTag()
+				// and modify the UI
+				final ListEntry entryToUpdate = (ListEntry) viewToUpdate.getTag();
+				entryToUpdate.icon.setImageDrawable(entryToUpdate.app.cached_icon);
+			} catch (Exception e) {
+				Log.e("DroidWall", "Error showing icon", e);
+			}
+		};
+	}
 
-	 /**
-	  * Entry representing an application in the screen
-	  */
-	 private static class ListEntry {
-		 private CheckBox box_wifi;
-		 private CheckBox box_3g;
-		 private TextView text;
-		 private ImageView icon;
-		 private DroidApp app;
-	 }
+	/**
+	 * Entry representing an application in the screen
+	 */
+	private static class ListEntry {
+		private CheckBox box_wifi;
+		private CheckBox box_3g;
+		private TextView text;
+		private ImageView icon;
+		private DroidApp app;
+	}
 }
